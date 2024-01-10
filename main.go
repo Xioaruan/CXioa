@@ -44,12 +44,12 @@ func Scanf(a *string) {
 func BuildWin() {
 	buildadmin()
 	buildagent()
-	// createcode.DelectFIR()
+	createcode.DelectFIR()
 }
 func BuildLinux() {
 	buildadminLinux() //linux版本的admin不需要改变，只有在build的时候需要改动
 	buildagentlinux()
-	createcode.DelectFIRLin()
+	// createcode.DelectFIRLin()
 }
 
 func buildadmin() {

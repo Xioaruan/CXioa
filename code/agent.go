@@ -272,6 +272,9 @@ func ExecCode(shell string) string {
 
 		cmd := exec.Command("/bin/bash", "-c", shell)
 		output, _ := cmd.CombinedOutput()
+		if string(output) == "" {
+			return "无返回"
+		}
 		out := string(output)
 		return out
 	}
