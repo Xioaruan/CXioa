@@ -80,6 +80,7 @@ connall:
 				filebase := upload.CheckFileName(file)
 				fmt.Println(filebase)
 				function.Write_conn(conn, filebase)
+				time.Sleep(time.Microsecond * 200)
 				upload.Doupload(file, conn)
 			}
 		default:
