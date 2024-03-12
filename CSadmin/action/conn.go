@@ -19,7 +19,7 @@ var file string
 
 func Conn_ip() {
 
-	port := "12321"
+	port := "12332"
 	conn := function.Lis_net(port)
 connall:
 	for {

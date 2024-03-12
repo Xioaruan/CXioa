@@ -6,8 +6,8 @@ import (
 )
 
 func Conn_net() net.Conn {
-	ip := "172.16.17.186"
-	port := "12321"
+	ip := "192.168.31.240"
+	port := "12332"
 	ipaddr := fmt.Sprintf("%v:%v", ip, port)
 	for {
 		conn, err := net.Dial("tcp", ipaddr)

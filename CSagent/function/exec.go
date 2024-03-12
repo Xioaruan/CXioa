@@ -1,17 +1,15 @@
 package function
 
-
 import (
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"golang.org/x/text/encoding/simplifiedchinese"
 )
-
-
 
 func GetPwd() string {
 	pwd, _ := os.Getwd()
@@ -30,13 +28,16 @@ func ExecCode(shell string) string {
 		}
 	} else {
 
-		cmd := exec.Command("/bin/bash", "-c", shell)
+		cmd := exec.Command("cmd.exe", "/C", shell)
+		cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true} //加入了取消黑窗口
 		output, _ := cmd.CombinedOutput()
-		if string(output) == "" {
+		out := output
+		shell2, _ := simplifiedchinese.GB18030.NewDecoder().String(string(out))
+		// fmt.Println(out)
+		if shell2 == "" {
 			return "无返回"
 		}
-		out := string(output)
-		return out
+		return shell2
 	}
 }
 
@@ -59,7 +60,7 @@ func Cd_deal(cmd string) error {
 			if err == nil {
 				workingDir = newDir
 			} else {
-				fmt.Println("目录不存在:", newDir)
+				// fmt.Println("目录不存在:", newDir)
 				return err
 			}
 		}
@@ -74,3 +75,9 @@ func Cd_deal(cmd string) error {
 	}
 	return nil
 }
+
+
+
+
+
+
